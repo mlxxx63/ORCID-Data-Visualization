@@ -27,6 +27,7 @@
 #remotes::install_github("ropensci/rcrossref")
 #install.packages('roadoi')
 #install.packages('inops')
+#install.packages("rdatacite")
 
 # load the packages
 library(dplyr)
@@ -48,6 +49,8 @@ library(rorcid)
 library(rcrossref)
 library(roadoi)
 library(inops)
+library(rdatacite)
+
 
 # remove all objects from the environment to start with a clean slate
 rm(list = ls())
@@ -113,7 +116,7 @@ usethis::edit_r_environ()
 rorcid::orcid_auth()
 
 
-# set some variablees and build the query  --------------------------------------------------------
+# set some variables and build the query  --------------------------------------------------------
 
 # set the working directory where this script is
 # a folder called "data" is also expected to be in this directory
@@ -133,7 +136,7 @@ email_domain <- "enter your institution's email domain"
 organization_name <- "enter your organization's name"
 
 # Set a short name key word here that you will use to filter for ORCID records from the home institution later
-# Keep it short, like the state name (e.g. Oklahoma).
+# Keep it short, like the state name (e.g. Oklahoma). (For Temple University, used "Temple")
 # If you are adding more than one keyword, separate them by a pipe (|)
 my_org_keyword = "enter your institution's keyword"
 
@@ -250,7 +253,7 @@ my_organizations_filtered <- my_organizations %>%
 view(my_organizations_filtered)
 
 # filter the dataset to include only the institutions you want 
-# decide between these two choices:
+# decide between these two choices:2
 # 1. to accept any organization listed in my_organization filtered, run this:
 my_employment_data_filtered <- my_employment_data %>%
   dplyr::filter(organization_name %in% my_organizations_filtered$organization_name[])
@@ -530,6 +533,153 @@ cr_merge <- cr_merge %>%
 cr_merge$issued<-cr_merge$issued2
 cr_merge <- cr_merge %>% select(-(issued2))
 
+# make cr_merge reference_count and is_referenced_by_count columns numeric,
+#  for smooth merge with dc_merge
+cr_merge$reference_count <- as.numeric(as.character(cr_merge$reference_count))
+cr_merge$is_referenced_by_count <- as.numeric(as.character(cr_merge$is_referenced_by_count))
+
+# Get DataCite data  -----------------------------------------------------------
+
+# Make a list of all dois not found through CrossRef
+`%ni%` <- Negate(`%in%`)
+
+filtered_dois <- dplyr::filter(dois_since_year, dois_since_year$doi %ni% metadata_since_year_df$doi)
+
+# retriving metadata using datacite
+metadata_since_year <- map(filtered_dois$doi, function(z){
+  print(z)
+  o <- dc_dois(z,detail=TRUE)
+  return(o)    
+})
+
+##### WRITE/READ JSON uncomment to work with this data outside of R or read it back in later
+#write_file_path = paste("./data/datacite_metadata_",my_year,".json")
+#to_write<-toJSON(mdata_since_year, pretty=TRUE, na="null") # Error: No method asJSON S3 class: dc
+#write(to_write,write_file_path)
+
+# read it back in, if necessary
+#metadata_since_year <- read_json(write_file_path, simplifyVector = TRUE)
+
+dc_metadata_since_year_df <- metadata_since_year %>%
+  map_dfr(., pluck("data")) %>%
+  clean_names() %>%
+  dplyr::filter(!duplicated(attributes$doi)) 
+
+# unnesting dates, titles, and authors information
+dc_metadata_since_year_df <- dc_metadata_since_year_df %>%
+  unnest_wider(attributes) %>%
+  unnest_wider(dates, names_sep = "_") %>%
+  unnest_wider(dates_1, names_sep = "_") %>%
+  unnest_wider(titles, names_sep = "_") %>%
+  unnest_wider(titles_1, names_sep = "_") %>%
+  unnest_wider(creators, names_sep = "_") %>%
+  unnest_wider(types, names_sep = "_") 
+
+# duplicate published column to match with cr_merge
+dc_metadata_since_year_df <- dc_metadata_since_year_df %>%
+  mutate(published_print = published)
+
+# rename columns  
+dc_metadata_since_year_df <- dc_metadata_since_year_df %>%
+  rename(
+    date = dates_1_date,
+    dateType = dates_1_dateType,
+    title = titles_1_title,
+    author = creators_1,
+    data_type = type,
+    type = types_citeproc,
+    reference_count = referenceCount,
+    is_referenced_by_count = citationCount,
+    alternative_id = id,
+    published_online = published
+  )
+
+# add some columns
+dc_metadata_since_year_df[,c("issued", "available", "submitted")] = NA
+
+# function to create new columns
+create_date_columns <- function(df) {
+  
+  for (i in 1:nrow(df)) {
+    dates <- unlist(df$date[i])
+    print(dates)
+    types <- unlist(df$dateType[i])
+    print(types)
+    
+    for (j in 1:length(types)) {
+      if (types[j] == "Issued") {
+        df$issued[i] <- dates[j]
+        print("Issued")
+      }
+      if (types[j] == "Available") { #maybe only keep issued then??
+        df$available[i] <- dates[j]
+        print("Available")
+      }
+      if (types[j] == "Submitted") {
+        df$submitted[i] <- dates[j]
+        print("Submitted")
+      }
+      if (types[j] == "Published") {
+        df$published[i] <- dates[j]
+        print("Published")
+      }
+    }
+  }
+  return(df)
+}
+
+
+# fill up the columns
+dc_metadata_since_year_df <- dc_metadata_since_year_df %>%
+  create_date_columns() 
+
+# select relevant columns
+dc_merge <- dc_mdata_since_year_df %>%
+  select(any_of(c("doi",
+                  "title",
+                  "published_print", 
+                  "published_online", 
+                  "issued", 
+                  # not finding rn "container_title",
+                  "issn",
+                  "volume",
+                  "issue",
+                  "page",
+                  "publisher",
+                  "language",
+                  "isbn",
+                  "url",
+                  "type",
+                  #"subject", #work on this later
+                  "reference_count",
+                  "is_referenced_by_count",
+                  #"subjects",
+                  "alternative_id",
+                  "author",
+                  "pdf_url")))
+
+
+# Fix missing DataCite dates
+jan1date<-paste0(my_year,"-01-01")
+dc_merge$issued<-dc_merge$issued %>% replace_na(jan1date)
+dc_merge <- dc_merge %>% add_column(issued2 = "", .after = "issued") 
+dc_merge <- dc_merge %>%
+  mutate(
+    issued2 = if_else(
+      condition = nchar(trim(issued)) == 7,
+      true      = paste0(issued,"-01"),
+      false     = issued
+    )
+  ) %>% 
+  mutate(
+    issued2 = if_else(
+      condition = nchar(trim(issued)) == 4, 
+      true      = paste0(issued,"-01-01"), 
+      false     = issued2
+    )
+  )
+dc_merge$issued<-dc_merge$issued2
+dc_merge <- dc_merge %>% select(-(issued2))
 
 # build an author ORCID ID reference table -----------------------------------------------------
 # it will help us fill in blanks later if we start building a dataframe of full author names with their ORCID
@@ -580,15 +730,28 @@ names_df <- rbind(master_names,credit_names)
 
 # The authors for each DOI in the cr_merge dataframe are in a nested list. 
 # In order to collect information about them, we must unnest the list,
-# Then we will build a list of home author, co-author pairs and try ti fill in any unknown ORCID
+# Then we will build a list of home author, co-author pairs and try to fill in any unknown ORCID
 # and location info about the co-authors
 
-# unnest the author list for each DOI
+# unnest the author list for each CrossRef DOI 
 what_auths <- cr_merge %>% unnest(author)
+
+# unnest the author list for each DataCite DOI
+dc_what_auths <- dc_merge %>% unnest(author)
+
+# rename columns to match CrossRef columns
+dc_what_auths <- dc_what_auths %>%
+  rename(
+    given = givenName,
+    family = familyName
+  )
+
+# merge CrossRef and DataCite author lists
+auths_merge <- full_join(dc_what_auths, what_auths, by = intersect(colnames(dc_what_auths),colnames(what_auths)))
 
 # left join this DOI authors list to our list of home authors by DOI
 # this gives us a df where there is an individual row for each home author and co-author on a  DOI
-authlist_all <- what_auths %>%
+authlist_all <- auths_merge %>%
   left_join(orcid_merge, by = "doi")
 
 # when multiple home authors have collaborated on a DOI there will be several sets of
@@ -602,7 +765,7 @@ authlist_all <- what_auths %>%
 
 # add some columns to authlist_all to help with this deduplicating
 authlist_all$orcid_coauth <- with(authlist_all, 
-                                  ifelse(is.na(ORCID),'',str_sub(ORCID , 18, 37))
+                                  ifelse(is.na(ORCID),'',str_sub(ORCID, 18, 37))
 )
 
 # fullname identifier for the home author, striped of punctuation and whitespace
@@ -733,6 +896,13 @@ co_authors$city1[co_authors$city1 == "" | co_authors$city1 == " " | is.na(co_aut
 co_authors$region1[co_authors$region1 == "" | co_authors$region1 == " " | is.na(co_authors$region1)]<- anchor_region
 co_authors$country1[co_authors$country1 == "" | co_authors$country1 == " " | is.na(co_authors$country1)]<- anchor_country
 
+# if a value in co_auth_ids_unduped gives an error when you try to generate my_co_auths_employment below
+# (like that it is locked and cannot be edited)
+# remove it from the list by filling in the problem ORCID ID (format XXXX-XXXX-XXXX-XXXX), uncommenting, and running this statement
+# then try to generate my_co_auths_employment again
+#co_auth_ids_unduped <- co_auth_ids_unduped[ co_auth_ids_unduped != "enter problem ORCID ID here in format XXXX-XXXX-XXXX-XXXX"]
+
+# get the co-authors employment data from their ORCID profile
 
 # though we might have filled in a few pieces of co-author info for some of the co-authors from the same institution above,
 # we stil need city, region, and country for many of the co-authors. we can try to retrive this if we have the co-authors ORCID ID
@@ -743,13 +913,6 @@ co_authors$country1[co_authors$country1 == "" | co_authors$country1 == " " | is.
 co_auth_ids <- co_authors$orcid2
 co_auth_ids_unduped <- unique(co_auth_ids[co_auth_ids != ""])
 
-# if a value in co_auth_ids_unduped gives an error when you try to generate my_co_auths_employment below
-# (like that it is locked and cannot be edited)
-# remove it from the list by filling in the problem ORCID ID (format XXXX-XXXX-XXXX-XXXX), uncommenting, and running this statement
-# then try to generate my_co_auths_employment again
-#co_auth_ids_unduped <- co_auth_ids_unduped[ co_auth_ids_unduped != "enter problem ORCID ID here in format XXXX-XXXX-XXXX-XXXX"]
-
-# get the co-authors employment data from their ORCID profile
 ##### TIME: This may take anywhere from a few seconds to a few minutes (e.g. for Temple University's 2022 data [>850 IDs], this took ~2 minutes)
 my_co_auths_employment <- rorcid::orcid_employments(co_auth_ids_unduped)
 
@@ -832,7 +995,6 @@ co_authors_full_info <- co_authors_full_info %>% select(doi:country2)
 # get rid of NA values
 co_authors_full_info[is.na(co_authors_full_info)] <- ""
 
-
 # clean up US state names so they produce single locations on the Tableau map
 # set up a dataframe of state names and abbreviations
 states_df<- data.frame(state.abb, state.name, paste0(state.name,'US'))
@@ -854,7 +1016,6 @@ co_authors_full_info$state2<-with(co_authors_full_info,paste0(region2,country2))
 co_authors_full_info <- left_join(co_authors_full_info,states_df,by=c("state2" = "id"))
 co_authors_full_info$region2 <- ifelse(is.na(co_authors_full_info$abb), co_authors_full_info$region2, co_authors_full_info$abb )
 co_authors_full_info <- co_authors_full_info %>% select(doi:country2)
-
 
 # write it to a csv to be visualized
 write_csv(co_authors_full_info, "./data/orcid-data.csv")
