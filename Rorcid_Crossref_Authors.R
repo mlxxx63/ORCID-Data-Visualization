@@ -511,38 +511,38 @@ cr_merge <- metadata_since_year_df %>%
 # however the DOI issued date may earlier than my_year, could be NA, or will have missing month or day info
 # if an issued date from CrossRef is NA, we will fill it in as my_year-01-01
 # if issued is a partial date, we fill in with January 1, or the 1st of the month 
-# so that in Tableau they will render properly as dates
-jan1date<-paste0(my_year,"-01-01")
-cr_merge$issued<-cr_merge$issued %>% replace_na(jan1date)
-cr_merge <- cr_merge %>% add_column(issued2 = "", .after = "issued") 
-cr_merge <- cr_merge %>%
-  mutate(
-    issued2 = if_else(
-      condition = nchar(trim(issued)) == 7,
-      true      = paste0(issued,"-01"),
-      false     = issued
-    )
-  ) %>% 
-  mutate(
-    issued2 = if_else(
-      condition = nchar(trim(issued)) == 4, 
-      true      = paste0(issued,"-01-01"), 
-      false     = issued2
-    )
-  )
-cr_merge$issued<-cr_merge$issued2
-cr_merge <- cr_merge %>% select(-(issued2))
+# # so that in Tableau they will render properly as dates
+# jan1date<-paste0(my_year,"-01-01")
+# cr_merge$issued<-cr_merge$issued %>% replace_na(jan1date)
+# cr_merge <- cr_merge %>% add_column(issued2 = "", .after = "issued") 
+# cr_merge <- cr_merge %>%
+#   mutate(
+#     issued2 = if_else(
+#       condition = nchar(trim(issued)) == 7,
+#       true      = paste0(issued,"-01"),
+#       false     = issued
+#     )
+#   ) %>% 
+#   mutate(
+#     issued2 = if_else(
+#       condition = nchar(trim(issued)) == 4, 
+#       true      = paste0(issued,"-01-01"), 
+#       false     = issued2
+#     )
+#   )
+# cr_merge$issued<-cr_merge$issued2
+# cr_merge <- cr_merge %>% select(-(issued2))
 
 # make cr_merge reference_count and is_referenced_by_count columns numeric,
-#  for smooth merge with dc_merge
+#  for smooth merging with DataCite data
 cr_merge$reference_count <- as.numeric(as.character(cr_merge$reference_count))
 cr_merge$is_referenced_by_count <- as.numeric(as.character(cr_merge$is_referenced_by_count))
 
 # Get DataCite data  -----------------------------------------------------------
 
-# Make a list of all dois not found through CrossRef
 `%ni%` <- Negate(`%in%`)
 
+# Make a list of all dois not found through CrossRef
 filtered_dois <- dplyr::filter(dois_since_year, dois_since_year$doi %ni% metadata_since_year_df$doi)
 
 # retriving metadata using datacite
@@ -597,7 +597,7 @@ dc_metadata_since_year_df <- dc_metadata_since_year_df %>%
 # add some columns
 dc_metadata_since_year_df[,c("issued", "available", "submitted")] = NA
 
-# function to create new columns
+# function to populate new columns
 create_date_columns <- function(df) {
   
   for (i in 1:nrow(df)) {
@@ -640,7 +640,7 @@ dc_merge <- dc_mdata_since_year_df %>%
                   "published_print", 
                   "published_online", 
                   "issued", 
-                  # not finding rn "container_title",
+                  #"container_title",
                   "issn",
                   "volume",
                   "issue",
@@ -650,7 +650,7 @@ dc_merge <- dc_mdata_since_year_df %>%
                   "isbn",
                   "url",
                   "type",
-                  #"subject", #work on this later
+                  #"subject", 
                   "reference_count",
                   "is_referenced_by_count",
                   #"subjects",
@@ -659,27 +659,27 @@ dc_merge <- dc_mdata_since_year_df %>%
                   "pdf_url")))
 
 
-# Fix missing DataCite dates
-jan1date<-paste0(my_year,"-01-01")
-dc_merge$issued<-dc_merge$issued %>% replace_na(jan1date)
-dc_merge <- dc_merge %>% add_column(issued2 = "", .after = "issued") 
-dc_merge <- dc_merge %>%
-  mutate(
-    issued2 = if_else(
-      condition = nchar(trim(issued)) == 7,
-      true      = paste0(issued,"-01"),
-      false     = issued
-    )
-  ) %>% 
-  mutate(
-    issued2 = if_else(
-      condition = nchar(trim(issued)) == 4, 
-      true      = paste0(issued,"-01-01"), 
-      false     = issued2
-    )
-  )
-dc_merge$issued<-dc_merge$issued2
-dc_merge <- dc_merge %>% select(-(issued2))
+# # Fix missing DataCite dates
+# jan1date<-paste0(my_year,"-01-01")
+# dc_merge$issued<-dc_merge$issued %>% replace_na(jan1date)
+# dc_merge <- dc_merge %>% add_column(issued2 = "", .after = "issued") 
+# dc_merge <- dc_merge %>%
+#   mutate(
+#     issued2 = if_else(
+#       condition = nchar(trim(issued)) == 7,
+#       true      = paste0(issued,"-01"),
+#       false     = issued
+#     )
+#   ) %>% 
+#   mutate(
+#     issued2 = if_else(
+#       condition = nchar(trim(issued)) == 4, 
+#       true      = paste0(issued,"-01-01"), 
+#       false     = issued2
+#     )
+#   )
+# dc_merge$issued<-dc_merge$issued2
+# dc_merge <- dc_merge %>% select(-(issued2))
 
 # build an author ORCID ID reference table -----------------------------------------------------
 # it will help us fill in blanks later if we start building a dataframe of full author names with their ORCID
@@ -748,6 +748,28 @@ dc_what_auths <- dc_what_auths %>%
 
 # merge CrossRef and DataCite author lists
 auths_merge <- full_join(dc_what_auths, what_auths, by = intersect(colnames(dc_what_auths),colnames(what_auths)))
+
+# Fix missing dates
+jan1date<-paste0(my_year,"-01-01")
+auths_merge$issued<-auths_merge$issued %>% replace_na(jan1date)
+auths_merge <- auths_merge %>% add_column(issued2 = "", .after = "issued") 
+auths_merge <- auths_merge %>%
+  mutate(
+    issued2 = if_else(
+      condition = nchar(trim(issued)) == 7,
+      true      = paste0(issued,"-01"),
+      false     = issued
+    )
+  ) %>% 
+  mutate(
+    issued2 = if_else(
+      condition = nchar(trim(issued)) == 4, 
+      true      = paste0(issued,"-01-01"), 
+      false     = issued2
+    )
+  )
+auths_merge$issued<-auths_merge$issued2
+auths_merge <- auths_merge %>% select(-(issued2))
 
 # left join this DOI authors list to our list of home authors by DOI
 # this gives us a df where there is an individual row for each home author and co-author on a  DOI
