@@ -507,32 +507,6 @@ cr_merge <- metadata_since_year_df %>%
                   "author",
                   "pdf_url")))
 
-# CrossRef metadata was retrieved for Works on the ORCID profile with publication year >= my_year
-# however the DOI issued date may earlier than my_year, could be NA, or will have missing month or day info
-# if an issued date from CrossRef is NA, we will fill it in as my_year-01-01
-# if issued is a partial date, we fill in with January 1, or the 1st of the month 
-# # so that in Tableau they will render properly as dates
-# jan1date<-paste0(my_year,"-01-01")
-# cr_merge$issued<-cr_merge$issued %>% replace_na(jan1date)
-# cr_merge <- cr_merge %>% add_column(issued2 = "", .after = "issued") 
-# cr_merge <- cr_merge %>%
-#   mutate(
-#     issued2 = if_else(
-#       condition = nchar(trim(issued)) == 7,
-#       true      = paste0(issued,"-01"),
-#       false     = issued
-#     )
-#   ) %>% 
-#   mutate(
-#     issued2 = if_else(
-#       condition = nchar(trim(issued)) == 4, 
-#       true      = paste0(issued,"-01-01"), 
-#       false     = issued2
-#     )
-#   )
-# cr_merge$issued<-cr_merge$issued2
-# cr_merge <- cr_merge %>% select(-(issued2))
-
 # make cr_merge reference_count and is_referenced_by_count columns numeric,
 #  for smooth merging with DataCite data
 cr_merge$reference_count <- as.numeric(as.character(cr_merge$reference_count))
@@ -545,7 +519,7 @@ cr_merge$is_referenced_by_count <- as.numeric(as.character(cr_merge$is_reference
 # Make a list of all dois not found through CrossRef
 filtered_dois <- dplyr::filter(dois_since_year, dois_since_year$doi %ni% metadata_since_year_df$doi)
 
-# retriving metadata using datacite
+# retrieving metadata from datacite
 metadata_since_year <- map(filtered_dois$doi, function(z){
   print(z)
   o <- dc_dois(z,detail=TRUE)
@@ -594,7 +568,7 @@ dc_metadata_since_year_df <- dc_metadata_since_year_df %>%
     published_online = published
   )
 
-# add some columns
+# add some columns for issued, available and submitted dates info
 dc_metadata_since_year_df[,c("issued", "available", "submitted")] = NA
 
 # function to populate new columns
@@ -629,7 +603,7 @@ create_date_columns <- function(df) {
 }
 
 
-# fill up the columns
+# populate the columns
 dc_metadata_since_year_df <- dc_metadata_since_year_df %>%
   create_date_columns() 
 
@@ -657,29 +631,6 @@ dc_merge <- dc_mdata_since_year_df %>%
                   "alternative_id",
                   "author",
                   "pdf_url")))
-
-
-# # Fix missing DataCite dates
-# jan1date<-paste0(my_year,"-01-01")
-# dc_merge$issued<-dc_merge$issued %>% replace_na(jan1date)
-# dc_merge <- dc_merge %>% add_column(issued2 = "", .after = "issued") 
-# dc_merge <- dc_merge %>%
-#   mutate(
-#     issued2 = if_else(
-#       condition = nchar(trim(issued)) == 7,
-#       true      = paste0(issued,"-01"),
-#       false     = issued
-#     )
-#   ) %>% 
-#   mutate(
-#     issued2 = if_else(
-#       condition = nchar(trim(issued)) == 4, 
-#       true      = paste0(issued,"-01-01"), 
-#       false     = issued2
-#     )
-#   )
-# dc_merge$issued<-dc_merge$issued2
-# dc_merge <- dc_merge %>% select(-(issued2))
 
 # build an author ORCID ID reference table -----------------------------------------------------
 # it will help us fill in blanks later if we start building a dataframe of full author names with their ORCID
@@ -734,7 +685,7 @@ names_df <- rbind(master_names,credit_names)
 # and location info about the co-authors
 
 # unnest the author list for each CrossRef DOI 
-what_auths <- cr_merge %>% unnest(author)
+cr_what_auths <- cr_merge %>% unnest(author)
 
 # unnest the author list for each DataCite DOI
 dc_what_auths <- dc_merge %>% unnest(author)
@@ -747,9 +698,13 @@ dc_what_auths <- dc_what_auths %>%
   )
 
 # merge CrossRef and DataCite author lists
-auths_merge <- full_join(dc_what_auths, what_auths, by = intersect(colnames(dc_what_auths),colnames(what_auths)))
+auths_merge <- full_join(dc_what_auths, cr_what_auths, by = intersect(colnames(dc_what_auths),colnames(what_auths)))
 
-# Fix missing dates
+# CrossRef and DataCite metadata were retrieved for Works on the ORCID profile with publication year >= my_year
+# however the DOI issued date may earlier than my_year, could be NA, or will have missing month or day info
+# if an issued date from CrossRef/DataCite is NA, we will fill it in as my_year-01-01
+# if issued is a partial date, we fill in with January 1, or the 1st of the month 
+# so that in Tableau they will render properly as dates
 jan1date<-paste0(my_year,"-01-01")
 auths_merge$issued<-auths_merge$issued %>% replace_na(jan1date)
 auths_merge <- auths_merge %>% add_column(issued2 = "", .after = "issued") 
