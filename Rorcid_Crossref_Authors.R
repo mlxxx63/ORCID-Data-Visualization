@@ -526,14 +526,6 @@ metadata_since_year <- map(filtered_dois$doi, function(z){
   return(o)    
 })
 
-##### WRITE/READ JSON uncomment to work with this data outside of R or read it back in later
-#write_file_path = paste("./data/datacite_metadata_",my_year,".json")
-#to_write<-toJSON(mdata_since_year, pretty=TRUE, na="null") # Error: No method asJSON S3 class: dc
-#write(to_write,write_file_path)
-
-# read it back in, if necessary
-#metadata_since_year <- read_json(write_file_path, simplifyVector = TRUE)
-
 dc_metadata_since_year_df <- metadata_since_year %>%
   map_dfr(., pluck("data")) %>%
   clean_names() %>%

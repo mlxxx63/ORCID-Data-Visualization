@@ -48,6 +48,7 @@ library(rorcid)
 library(rcrossref)
 library(roadoi)
 library(inops)
+library(rdatacite)
 
 # remove all objects from the environment to start with a clean slate
 rm(list = ls())
@@ -343,6 +344,7 @@ dois_unduped <- dois %>%
 ##### WRITE/READ CSV
 
 
+
 # get CrossRef data -----------------------------------------------------
 
 # We start by subsetting our unduped dois to include only since the year that we want
@@ -354,11 +356,11 @@ dois_since_year <- dois_unduped %>%
 # prints the doi (this allows you to ensure it's progressing)
 # there will be warning messages for any DOIs not found at CrossRef
 ##### TIME This will take a long time for large datasets (e.g. for Temple University's 2022 data [800+ DOIs], this took ~6 minutes)
- metadata_since_year <- map(dois_since_year$doi, function(z) {
-   print(z)
-   o <- cr_works(dois = z)
-   return(o)
- })
+metadata_since_year <- map(dois_since_year$doi, function(z) {
+  print(z)
+  o <- cr_works(dois = z)
+  return(o)
+})
 
 ##### Code improvement
 # Here we could create a similar function that queries DataCite for metadata on the ones that weren't found in CR
@@ -415,32 +417,10 @@ cr_merge <- metadata_since_year_df %>%
                   "author",
                   "pdf_url")))
 
-# CrossRef metadata was retrieved for Works on the ORCID profile with publication year >= my_year
-# however the DOI issued date may earlier than my_year, could be NA, or will have missing month or day info
-# if an issued date from CrossRef is NA, we will fill it in as my_year-01-01
-# if issued is a partial date, we fill in with January 1, or the 1st of the month 
-# so that in Tableau they will render properly as dates
-jan1date<-paste0(my_year,"-01-01")
-cr_merge$issued<-cr_merge$issued %>% replace_na(jan1date)
-cr_merge <- cr_merge %>% add_column(issued2 = "", .after = "issued") 
-cr_merge <- cr_merge %>%
-  mutate(
-    issued2 = if_else(
-      condition = nchar(trim(issued)) == 7,
-      true      = paste0(issued,"-01"),
-      false     = issued
-    )
-  ) %>% 
-  mutate(
-    issued2 = if_else(
-      condition = nchar(trim(issued)) == 4, 
-      true      = paste0(issued,"-01-01"), 
-      false     = issued2
-    )
-  )
-cr_merge$issued<-cr_merge$issued2
-cr_merge <- cr_merge %>% select(-(issued2))
-
+# make cr_merge reference_count and is_referenced_by_count columns numeric,
+#  for smooth merging with DataCite data
+cr_merge$reference_count <- as.numeric(as.character(cr_merge$reference_count))
+cr_merge$is_referenced_by_count <- as.numeric(as.character(cr_merge$is_referenced_by_count))
 
 # build an author ORCID ID reference table -----------------------------------------------------
 # it will help us fill in blanks later if we start building a dataframe of full author names with their ORCID
@@ -486,6 +466,118 @@ credit_names <- credit_names[!duplicated(credit_names$orcid_identifier_path),]
 # concatenate these two data frames to start our author ORCID ID reference table
 names_df <- rbind(master_names,credit_names)
 
+
+# Get DataCite data  -----------------------------------------------------------
+
+`%ni%` <- Negate(`%in%`)
+
+# Make a list of all dois not found through CrossRef
+filtered_dois <- dplyr::filter(dois_since_year, dois_since_year$doi %ni% metadata_since_year_df$doi)
+
+# retrieving metadata from datacite
+metadata_since_year <- map(filtered_dois$doi, function(z){
+  print(z)
+  o <- dc_dois(z,detail=TRUE)
+  return(o)    
+})
+
+dc_metadata_since_year_df <- metadata_since_year %>%
+  map_dfr(., pluck("data")) %>%
+  clean_names() %>%
+  dplyr::filter(!duplicated(attributes$doi)) 
+
+# unnesting dates, titles, and authors information
+dc_metadata_since_year_df <- dc_metadata_since_year_df %>%
+  unnest_wider(attributes) %>%
+  unnest_wider(dates, names_sep = "_") %>%
+  unnest_wider(dates_1, names_sep = "_") %>%
+  unnest_wider(titles, names_sep = "_") %>%
+  unnest_wider(titles_1, names_sep = "_") %>%
+  unnest_wider(creators, names_sep = "_") %>%
+  unnest_wider(types, names_sep = "_") 
+
+# duplicate published column to match with cr_merge
+dc_metadata_since_year_df <- dc_metadata_since_year_df %>%
+  mutate(published_print = published)
+
+# rename columns  
+dc_metadata_since_year_df <- dc_metadata_since_year_df %>%
+  rename(
+    date = dates_1_date,
+    dateType = dates_1_dateType,
+    title = titles_1_title,
+    author = creators_1,
+    data_type = type,
+    type = types_citeproc,
+    reference_count = referenceCount,
+    is_referenced_by_count = citationCount,
+    alternative_id = id,
+    published_online = published
+  )
+
+# add some columns for issued, available and submitted dates info
+dc_metadata_since_year_df[,c("issued", "available", "submitted")] = NA
+
+# function to populate new columns
+create_date_columns <- function(df) {
+  
+  for (i in 1:nrow(df)) {
+    dates <- unlist(df$date[i])
+    print(dates)
+    types <- unlist(df$dateType[i])
+    print(types)
+    
+    for (j in 1:length(types)) {
+      if (types[j] == "Issued") {
+        df$issued[i] <- dates[j]
+        print("Issued")
+      }
+      if (types[j] == "Available") { #maybe only keep issued then??
+        df$available[i] <- dates[j]
+        print("Available")
+      }
+      if (types[j] == "Submitted") {
+        df$submitted[i] <- dates[j]
+        print("Submitted")
+      }
+      if (types[j] == "Published") {
+        df$published[i] <- dates[j]
+        print("Published")
+      }
+    }
+  }
+  return(df)
+}
+
+
+# populate the columns
+dc_metadata_since_year_df <- dc_metadata_since_year_df %>%
+  create_date_columns() 
+
+# select relevant columns
+dc_merge <- dc_mdata_since_year_df %>%
+  select(any_of(c("doi",
+                  "title",
+                  "published_print", 
+                  "published_online", 
+                  "issued", 
+                  #"container_title",
+                  "issn",
+                  "volume",
+                  "issue",
+                  "page",
+                  "publisher",
+                  "language",
+                  "isbn",
+                  "url",
+                  "type",
+                  #"subject", 
+                  "reference_count",
+                  "is_referenced_by_count",
+                  #"subjects",
+                  "alternative_id",
+                  "author",
+                  "pdf_url")))
 
 # get co-author information -----------------------------------------------------
 
