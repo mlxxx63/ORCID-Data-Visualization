@@ -101,11 +101,6 @@ ui <- page_navbar(
       card_header("List of Institutions", class="bg-dark"),
       DTOutput("institutionTable")
     )
-    # card(
-    #   min_height = 350,
-    #   card_header("List of DOIs", class="bg-dark"),
-    #   DTOutput("doisTable")
-    # )
   ),
   nav_panel(
     title = "Individual search",
