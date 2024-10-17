@@ -524,7 +524,7 @@ metadata_since_year <- map(filtered_dois$doi, function(z){
   print(z)
   o <- dc_dois(z,detail=TRUE)
   return(o)    
-})
+ })
 
 dc_metadata_since_year_df <- metadata_since_year %>%
   map_dfr(., pluck("data")) %>%
@@ -577,7 +577,7 @@ create_date_columns <- function(df) {
         df$issued[i] <- dates[j]
         print("Issued")
       }
-      if (types[j] == "Available") { #maybe only keep issued then??
+      if (types[j] == "Available") { 
         df$available[i] <- dates[j]
         print("Available")
       }
