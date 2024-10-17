@@ -32,9 +32,6 @@ organization_name <- "ENTER YOUR ORGANIZATION NAME HERE"
 start_date <- "ENTER START DATE HERE"        
 update_date <- "ENTER UPDATE DATE HERE"       
 
-setwd("C:/Users/icefrin/OneDrive - Canadian Research Knowledge Network/Desktop/ORCID-Data-Visualization")
-file_path <- "../data/orcid_cr_merge_for_dataviz_final.csv"
-
 
 # Generate subtitle panel for displaying dates
 generateSubtitlePanel <- function(org_name = organization_name, start = start_date, end = update_date) {
