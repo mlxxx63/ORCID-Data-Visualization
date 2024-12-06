@@ -1,5 +1,5 @@
-# Script by Olivia Given Castello, based on: https://ciakovx.github.io/rorcid.html 
-# and 04-rcrossref_metadata.R at https://github.com/ciakovx/fsci2022/tree/main/code
+# Script by Olivia Given Castello, with contributions from Isabela Souza Cefrin based on: 
+# https://ciakovx.github.io/rorcid.html and 04-rcrossref_metadata.R at https://github.com/ciakovx/fsci2022/tree/main/code
 # Retrieves ORCID profile and Crossref metadata for authors from a given institution, 
 # since a given year, paired with that of the co-authors with whom they collaborated.
 
@@ -28,6 +28,8 @@
 #install.packages('roadoi')
 #install.packages('inops')
 #install.packages("rdatacite")
+#install.packages("data.table")
+#devtools::install_github("ropensci/geonames")
 
 # load the packages
 library(dplyr)
@@ -50,6 +52,8 @@ library(rcrossref)
 library(roadoi)
 library(inops)
 library(rdatacite)
+library(data.table)
+library(geonames)
 
 
 # remove all objects from the environment to start with a clean slate
@@ -58,7 +62,7 @@ rm(list = ls())
 # Set up orcid / crossref in R environment ------------------------------------------------------------
 
 # if you've already done these steps and set up your bearer token in RStudio
-# you can skip to the next section: "set some variablees and build the query"
+# you can skip to the next section: "set some variables"
 
 # 1. If you haven’t done so already, create an ORCID account at https://orcid.org/signin. 
 # 2. In the upper right corner, click your name, then in the drop-down menu, click Developer Tools. Note: In order to access Developer Tools, you must verify your email address. 
@@ -115,8 +119,7 @@ usethis::edit_r_environ()
 #You can confirm this worked by calling orcid_auth(), and it will print the token
 rorcid::orcid_auth()
 
-
-# set some variables and build the query  --------------------------------------------------------
+# set some variables   ----------------------------------------------------------------------------
 
 # set the working directory where this script is
 # a folder called "data" is also expected to be in this directory
@@ -145,6 +148,16 @@ anchor_org<-"enter your institution's name"
 anchor_city<-"enter your institution's city"
 anchor_region<-"enter your institution's state"
 anchor_country<-"enter your institution's country"
+
+# set up GeoNames in R Environment ------------------------------------------------------------
+
+# define GeoNames username and use the institution's location information for geocoding.
+# these variables will be used to derive latitude and longitude.
+options(geonamesUsername = "PASTE GEONAMES USERNAME HERE")
+home_city <- anchor_city
+home_country <- anchor_country
+
+# build the query   ----------------------------------------------------------------------------
 
 # create the query
 # decide between these two choices:
@@ -987,10 +1000,19 @@ co_authors_full_info$region2 <- ifelse(is.na(co_authors_full_info$abb), co_autho
 co_authors_full_info <- co_authors_full_info %>% select(doi:country2)
 
 # write it to a csv to be visualized
-write_csv(co_authors_full_info, "./data/orcid-data.csv")
+##### WRITE/READ CSV uncomment to save this data and read it back in later
+#write_csv(co_authors_full_info, "./data/orcid-data.csv")
 
-# Ta da, you should now have a data file to visualize in Tableau
+# read it back in, if necessary
+#co_authors_full_info <- read_csv("./data/orcid-data.csv", col_types = cols(.default = "c"))
+##### WRITE/READ CSV
 
-# Before uploading to Tableau, consider cleaning your data file, either manually or using a tool
+# get latitude and longitude data for each location:
+# the sourced script (Geonames_Get_Lat_Long.R) will generate a final CSV file: "./data/orcid_data_latlng.csv"
+source("./Geonames_Get_Lat_Long.R")
+
+# Ta da, you should now have a data file to visualize with Shiny!
+
+# Before visualizing your data, consider cleaning your data file, either manually or using a tool
 # like Open Refine (https://openrefine.org/). It will improve the visualization if wordings and spellings
 # are standardized, particularly in the organization (org1, org2) and city name (city1, city2) fields.
