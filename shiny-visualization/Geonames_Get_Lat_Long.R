@@ -3,16 +3,30 @@
 ## as Tableau previously generated them automatically.
 ## Please note that a GeoNames account will be necessary to run this script.
 
-library(data.table)
-library(purrr)
-devtools::install_github("ropensci/geonames")
-library(geonames)
+# Install and load packages -----------------------------------------------
 
-# Set the institution's location information
-home_city <- "ENTER ORGANIZATION CITY HERE"
-home_country <- "ENTER HOME COUNTRY HERE (e.g. CA)"
+# the following packages are required for this script, but they are already installed and loaded in Rorcid_Crossref_Authors.R
+# you do not need to uncomment these lines unless you are running this script independently or for the first time.
 
-options(geonamesUsername = "PASTE GEONAMES USERNAME HERE")
+# install.packages(purr)
+# install.packages("data.table")
+# devtools::install_github("ropensci/geonames")
+
+# library(data.table)
+# library(geonames)
+# library(purrr)
+
+# Set the institution's location information --------------------------------
+
+# the following setup for institution location and GeoNames username is also included in Rorcid_Crossref_Authors.R.
+# uncomment and update these values only if running this script independently.
+
+# home_city <- "ENTER ORGANIZATION CITY HERE"
+# home_country <- "ENTER HOME COUNTRY HERE (e.g. CA)"
+
+# options(geonamesUsername = "PASTE GEONAMES USERNAME HERE")
+
+# Update co_authors_full_info ------------------------------------------------
 
 # get unique city / region / country values from co_authors_full_info
 places <- unique(co_authors_full_info[c("city2", "region2", "country2")])
@@ -48,7 +62,7 @@ for (my_row in 1:nrow(places)) {
 # the places dataframe needs to be broken up into smaller dataframs of <=1000 rows
 
 # you can write the file to json if you want to work with it outside of R
-write_json(places, "./data/places.json")
+# write_json(places, "./data/places.json")
 
 # here is how you would read it back in, if necessary
 # places <- read_json("./data/places.json", simplifyVector = TRUE)
@@ -100,4 +114,4 @@ co_authors_full_info_latlng <- co_authors_full_info_latlng %>%
     country2 = country2.x,
   )
 
-write_csv(co_authors_full_info_latlng, "./data/orcid_cr_merge_for_dataviz_final.csv")
+write_csv(co_authors_full_info_latlng, "./data/orcid_data_latlng.csv")
