@@ -70,7 +70,7 @@ Note that the script has various sections, and there are opportunities for you t
 Note that there is one more part of the script, in the “get employment data” section, where you will have three options:
 1) Accept all of the organization names returned by the initial query
 2) View and edit the list of organization names to be included in the search results
-3) Accept all of the organization names containing ```anchor_org```.
+3) Accept all of the organization names containing `anchor_org`.
 
 Continue to follow the instructions and run the script commands, until you get to the end, where the final CSV data file will be exported to your data folder.
 Once you have the CSV output, you may want to check and clean organization names and city names using [Open Refine](https://openrefine.org/). This can be helpful for collapsing multiple variations of the same organization name (mis-spellings, extra spaces, etc.), and for filling in any city information that may be missing or incorrect.
@@ -114,7 +114,7 @@ Reach out to your campus ORCID administrator or CRKN for further troubleshooting
 * [Financial Times Visual Vocabulary](https://github.com/Financial-Times/chart-doctor/blob/main/visual-vocabulary/README.md)
 
 ## Questions and support
-For any questions or support, or to provide feedback, please contact Lyrasis ORCID US Community support at ORCID-CA@crkn.ca.
+For any questions or support, or to provide feedback, please contact CRKN ORCID-CA Community support at ORCID-CA@crkn.ca.
 ## Usage License
 This repository, [ORCID Data Visualization](https://github.com/crkn-rcdr/ORCID-Data-Visualization), © 2024 by [CRKN](https://www.crkn-rcdr.ca/en/orcid-ca-home), is licensed under [CC BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/?ref=chooser-v1).
 
