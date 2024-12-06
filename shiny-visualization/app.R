@@ -37,7 +37,7 @@ update_date <- "ENTER UPDATE DATE HERE"
 generateSubtitlePanel <- function(org_name = organization_name, start = start_date, end = update_date) {
   div(
     class = "subtitle",
-    HTML(paste("<h5>","(", start, " - ", end, ") ", " Data pulled on ", end, "</h5>", sep = ""))
+    HTML(paste("<h3>","(", start, " - ", end, ") ", " Data pulled on ", end, "</h3>", sep = ""))
   )
 }
 
@@ -47,7 +47,7 @@ generateTitlePanel <- function(org_name = organization_name, start = start_date,
     titlePanel(paste(organization_name, " (", start, " - ", end, ")", sep = "")),
     div(
       class = "subtitle",
-      HTML(paste("<h5>Data pulled on", end, "</h5>"))
+      HTML(paste("<h3>Data pulled on", end, "</h3>"))
     )
   )
 }
