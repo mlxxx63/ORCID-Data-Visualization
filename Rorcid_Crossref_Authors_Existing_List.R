@@ -1,5 +1,5 @@
-# Script by Olivia Given Castello, adapted by Sheila Rabun, based on: https://ciakovx.github.io/rorcid.html 
-# and 04-rcrossref_metadata.R at https://github.com/ciakovx/fsci2022/tree/main/code
+# Script by Olivia Given Castello, adapted by Sheila Rabun, with contributions from Isabela Souza Cefrin
+# based on: https://ciakovx.github.io/rorcid.html and 04-rcrossref_metadata.R at https://github.com/ciakovx/fsci2022/tree/main/code
 # Retrieves ORCID profile and Crossref metadata for authors from an existing list of ORCID iDs, 
 # since a given year, paired with that of the co-authors with whom they collaborated.
 
@@ -27,6 +27,8 @@
 #remotes::install_github("ropensci/rcrossref")
 #install.packages('roadoi')
 #install.packages('inops')
+#install.packages("data.table")
+#devtools::install_github("ropensci/geonames")
 
 # load the packages
 library(dplyr)
@@ -49,6 +51,8 @@ library(rcrossref)
 library(roadoi)
 library(inops)
 library(rdatacite)
+library(data.table)
+library(geonames)
 
 # remove all objects from the environment to start with a clean slate
 rm(list = ls())
@@ -56,7 +60,7 @@ rm(list = ls())
 # Set up orcid / crossref in R environment ------------------------------------------------------------
 
 # if you've already done these steps and set up your bearer token in RStudio
-# you can skip to the next section: "set some variablees and build the query"
+# you can skip to the next section: "set some variables"
 
 # 1. If you haven’t done so already, create an ORCID account at https://orcid.org/signin. 
 # 2. In the upper right corner, click your name, then in the drop-down menu, click Developer Tools. Note: In order to access Developer Tools, you must verify your email address. 
@@ -114,7 +118,7 @@ usethis::edit_r_environ()
 rorcid::orcid_auth()
 
 
-# set some variablees and build the query  --------------------------------------------------------
+# set some variablees ---------------------------------------------------------------------------
 
 # set the working directory where this script is
 # a folder called "data" is also expected to be in this directory
@@ -143,6 +147,13 @@ anchor_country<-"Country"
 # third column should be titled orcid_identifier_host and should contain a list of just the 16 digit ORCID numbers for each person (example: 0000-0002-0375-8429)
 my_orcids_data <- read_csv("./data/my_orcids_data.csv", col_types = cols(.default = "c"))
 
+# set up GeoNames in R Environment ------------------------------------------------------------
+
+# define GeoNames username and use the institution's location information for geocoding.
+# these variables will be used to derive latitude and longitude.
+options(geonamesUsername = "PASTE GEONAMES USERNAME HERE")
+home_city <- anchor_city
+home_country <- anchor_country
 
 # get employment data -----------------------------------------------------
 
@@ -858,12 +869,19 @@ co_authors_full_info <- left_join(co_authors_full_info,states_df,by=c("state2" =
 co_authors_full_info$region2 <- ifelse(is.na(co_authors_full_info$abb), co_authors_full_info$region2, co_authors_full_info$abb )
 co_authors_full_info <- co_authors_full_info %>% select(doi:country2)
 
+##### WRITE/READ CSV uncomment to save this data and read it back in later
+#write_csv(co_authors_full_info, "./data/orcid-data.csv")
 
-# write it to a csv to be visualized
-write_csv(co_authors_full_info, "./data/orcid-data.csv")
+# read it back in, if necessary
+#co_authors_full_info <- read_csv("./data/orcid-data.csv", col_types = cols(.default = "c"))
+##### WRITE/READ CSV
 
-# Ta da, you should now have a data file to visualize in Tableau
+# get latitude and longitude data for each location:
+# the sourced script (Geonames_Get_Lat_Long.R) will generate a final CSV file: "./data/orcid_data_latlng.csv"
+source("./Geonames_Get_Lat_Long.R")
 
-# Before uploading to Tableau, consider cleaning your data file, either manually or using a tool
+# Ta da, you should now have a data file to visualize with Shiny!
+
+# Before visualizing your data, consider cleaning your data file, either manually or using a tool
 # like Open Refine (https://openrefine.org/). It will improve the visualization if wordings and spellings
 # are standardized, particularly in the organization (org1, org2) and city name (city1, city2) fields.
