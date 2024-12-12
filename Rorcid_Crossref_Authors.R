@@ -282,6 +282,10 @@ my_employment_data_filtered <- my_employment_data %>%
                 | organization_name == "Temple University Japan"
                 | organization_name == "Temple University - Ambler Campus")
 
+# OR 3. to accept any organization that contains anchor_org in my_organization_filtered:
+my_employment_data_filtered <- my_employment_data %>%
+  dplyr::filter(str_detect(organization_name, anchor_org))
+
 # finally, filter to include only people who have NA as the end date
 my_employment_data_filtered_current <- my_employment_data_filtered %>%
   dplyr::filter(is.na(end_date_year_value))
