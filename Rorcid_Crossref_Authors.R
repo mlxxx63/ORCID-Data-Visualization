@@ -617,7 +617,7 @@ dc_metadata_since_year_df <- dc_metadata_since_year_df %>%
   create_date_columns() 
 
 # select relevant columns
-dc_merge <- dc_mdata_since_year_df %>%
+dc_merge <- dc_metadata_since_year_df %>%
   select(any_of(c("doi",
                   "title",
                   "published_print", 
