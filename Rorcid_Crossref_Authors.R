@@ -285,7 +285,11 @@ my_employment_data_filtered <- my_employment_data %>%
 # OR 3. to accept any organization that contains anchor_org in my_organization_filtered:
 my_employment_data_filtered <- my_employment_data %>%
   dplyr::filter(str_detect(organization_name, anchor_org))
+<<<<<<< HEAD
 
+=======
+ 
+>>>>>>> refs/remotes/origin/main
 # finally, filter to include only people who have NA as the end date
 my_employment_data_filtered_current <- my_employment_data_filtered %>%
   dplyr::filter(is.na(end_date_year_value))
@@ -617,7 +621,7 @@ dc_metadata_since_year_df <- dc_metadata_since_year_df %>%
   create_date_columns() 
 
 # select relevant columns
-dc_merge <- dc_mdata_since_year_df %>%
+dc_merge <- dc_metadata_since_year_df %>%
   select(any_of(c("doi",
                   "title",
                   "published_print", 
