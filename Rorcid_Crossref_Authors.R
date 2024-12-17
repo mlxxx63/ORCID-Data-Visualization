@@ -982,7 +982,7 @@ co_authors_full_info <- co_authors_full_info %>% select(doi:country2)
 # get rid of NA values
 co_authors_full_info[is.na(co_authors_full_info)] <- ""
 
-# clean up US state names so they produce single locations on the Tableau map
+# clean up US state names
 # set up a dataframe of state names and abbreviations
 states_df<- data.frame(state.abb, state.name, paste0(state.name,'US'))
 colnames(states_df) <- c('abb','name','id')

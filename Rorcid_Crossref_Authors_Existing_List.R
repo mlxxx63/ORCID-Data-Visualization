@@ -847,10 +847,23 @@ co_authors_full_info <- co_authors_full_info %>% select(doi:country2)
 co_authors_full_info[is.na(co_authors_full_info)] <- ""
 
 
-# clean up US state names so they produce single locations on the Tableau map
+# clean up US state names
 # set up a dataframe of state names and abbreviations
 states_df<- data.frame(state.abb, state.name, paste0(state.name,'US'))
 colnames(states_df) <- c('abb','name','id')
+
+# Do the same for Canadian provinces
+provinces_df <- data.frame(
+  abb = c("AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT"),
+  name = c("Alberta", "British Columbia", "Manitoba", "New Brunswick", "Newfoundland and Labrador", 
+           "Nova Scotia", "Northwest Territories", "Nunavut", "Ontario", "Prince Edward Island", 
+           "Quebec", "Saskatchewan", "Yukon"),
+  id = paste0(c("Alberta", "British Columbia", "Manitoba", "New Brunswick", 
+                "Newfoundland and Labrador", "Nova Scotia", "Northwest Territories", 
+                "Nunavut", "Ontario", "Prince Edward Island", "Quebec", 
+                "Saskatchewan", "Yukon"), ' CA')
+)
+colnames(provinces_df) <- c('abb','name','id')
 
 # left join the correct state abbreviation for only US states with the full state name spelled out
 # starting with the home authors' region1
@@ -867,6 +880,23 @@ co_authors_full_info <- co_authors_full_info %>% select(doi:country2)
 co_authors_full_info$state2<-with(co_authors_full_info,paste0(region2,country2))
 co_authors_full_info <- left_join(co_authors_full_info,states_df,by=c("state2" = "id"))
 co_authors_full_info$region2 <- ifelse(is.na(co_authors_full_info$abb), co_authors_full_info$region2, co_authors_full_info$abb )
+co_authors_full_info <- co_authors_full_info %>% select(doi:country2)
+
+# Now handle Canadian provinces
+# Create a combined province and country identifier
+co_authors_full_info$province1 <- with(co_authors_full_info, paste0(region1, country1))
+co_authors_full_info <- left_join(co_authors_full_info, provinces_df, by = c("province1" = "id"))
+
+# Overwrite full province names with abbreviations where they occur
+co_authors_full_info$region1 <- ifelse(is.na(co_authors_full_info$abb), co_authors_full_info$region1, co_authors_full_info$abb)
+
+# Drop the joined columns
+co_authors_full_info <- co_authors_full_info %>% select(doi:country2)
+
+# Repeat the same process for the second region
+co_authors_full_info$province2 <- with(co_authors_full_info, paste0(region2, country2))
+co_authors_full_info <- left_join(co_authors_full_info, provinces_df, by = c("province2" = "id"))
+co_authors_full_info$region2 <- ifelse(is.na(co_authors_full_info$abb), co_authors_full_info$region2, co_authors_full_info$abb)
 co_authors_full_info <- co_authors_full_info %>% select(doi:country2)
 
 ##### WRITE/READ CSV uncomment to save this data and read it back in later
