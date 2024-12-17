@@ -37,7 +37,7 @@ places$lng <- ''
 
 for (my_row in 1:nrow(places)) {
   if (!is.na(places[my_row,'region2']) && places[my_row,'region2']!="" && !is.null(places[my_row,'region2']) && 
-      (places[my_row,'country2']=="CA" || places[my_row,'country2']=="US") && str_detect(places[my_row,'region2'],"^[A-Z]{2}$") ) {
+      places[my_row,'country2']=="US" && str_detect(places[my_row,'region2'],"^[A-Z]{2}$") ) {
     lanc_df <- GNsearch(name_equals = places[my_row,'city2'] , country = places[my_row,'country2'], adminCode1 = places[my_row,'region2'])    
   } else {
     lanc_df <- GNsearch(name_equals = places[my_row,'city2'] , country = places[my_row,'country2'])    
