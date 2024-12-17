@@ -707,7 +707,7 @@ dc_what_auths <- dc_what_auths %>%
   )
 
 # merge CrossRef and DataCite author lists
-auths_merge <- full_join(dc_what_auths, cr_what_auths, by = intersect(colnames(dc_what_auths),colnames(what_auths)))
+auths_merge <- full_join(dc_what_auths, cr_what_auths, by = intersect(colnames(dc_what_auths),colnames(cr_what_auths)))
 
 # CrossRef and DataCite metadata were retrieved for Works on the ORCID profile with publication year >= my_year
 # however the DOI issued date may earlier than my_year, could be NA, or will have missing month or day info
