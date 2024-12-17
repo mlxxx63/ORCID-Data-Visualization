@@ -274,13 +274,16 @@ my_employment_data_filtered <- my_employment_data %>%
 # OR 2. to specify which organization name variations to include, copy and paste them here
 # following this example. As you can see there may be messiness in hand-entered organization names.
 # replace these example names with the ones you are interested in from your my_organizations_filtered list
-my_employment_data_filtered <- my_employment_data %>%
-  dplyr::filter(organization_name == "Temple University"
-                | organization_name == "Temple University "
-                | organization_name == "Temple University Fox School of Business and Management"
-                | organization_name == "Temple University, Japan"
-                | organization_name == "Temple University Japan"
-                | organization_name == "Temple University - Ambler Campus")
+#dplyr::filter(organization_name == "University of New Brunswick" |
+#              organization_name == "University of New Brunswick Saint John" |
+#              organization_name == "University of New Brunswick Fredericton" |
+#              organization_name == "University of New Brunswick " |
+#              organization_name == "University of New Brunswick (Saint John)" |
+#              organization_name == "University of New Brunswick - Saint John Campus" |
+#              organization_name == "University of New Brunswick Saint John Department of Biology" |
+#              organization_name == "University of New Brunswick Saint John Faculty of Arts" |
+#              organization_name == "University of New Brunswick in Saint John" |
+#              organization_name == "University of New Brunswick - Saint John" )
 
 # OR 3. to accept any organization that contains anchor_org in my_organization_filtered:
 my_employment_data_filtered <- my_employment_data %>%
