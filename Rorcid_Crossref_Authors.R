@@ -285,11 +285,7 @@ my_employment_data_filtered <- my_employment_data %>%
 # OR 3. to accept any organization that contains anchor_org in my_organization_filtered:
 my_employment_data_filtered <- my_employment_data %>%
   dplyr::filter(str_detect(organization_name, anchor_org))
-<<<<<<< HEAD
 
-=======
- 
->>>>>>> refs/remotes/origin/main
 # finally, filter to include only people who have NA as the end date
 my_employment_data_filtered_current <- my_employment_data_filtered %>%
   dplyr::filter(is.na(end_date_year_value))
@@ -901,7 +897,8 @@ co_authors$country1[co_authors$country1 == "" | co_authors$country1 == " " | is.
 # (they are a home author because of their current affiliation, 
 # even though they may have published a DOI in the past when affiliated with a different organization)
 co_auth_ids <- co_authors$orcid2
-co_auth_ids_unduped <- unique(co_auth_ids[co_auth_ids != ""])
+co_auth_ids_unduped <- unique(co_auth_ids[co_auth_ids != ""]) %>%
+  gsub("^/", "", .)
 
 ##### TIME: This may take anywhere from a few seconds to a few minutes (e.g. for Temple University's 2022 data [>850 IDs], this took ~2 minutes)
 my_co_auths_employment <- rorcid::orcid_employments(co_auth_ids_unduped)
@@ -990,6 +987,19 @@ co_authors_full_info[is.na(co_authors_full_info)] <- ""
 states_df<- data.frame(state.abb, state.name, paste0(state.name,'US'))
 colnames(states_df) <- c('abb','name','id')
 
+# Do the same for Canadian provinces
+provinces_df <- data.frame(
+  abb = c("AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT"),
+  name = c("Alberta", "British Columbia", "Manitoba", "New Brunswick", "Newfoundland and Labrador", 
+           "Nova Scotia", "Northwest Territories", "Nunavut", "Ontario", "Prince Edward Island", 
+           "Quebec", "Saskatchewan", "Yukon"),
+  id = paste0(c("Alberta", "British Columbia", "Manitoba", "New Brunswick", 
+                "Newfoundland and Labrador", "Nova Scotia", "Northwest Territories", 
+                "Nunavut", "Ontario", "Prince Edward Island", "Quebec", 
+                "Saskatchewan", "Yukon"), ' CA')
+)
+colnames(provinces_df) <- c('abb','name','id')
+
 # left join the correct state abbreviation for only US states with the full state name spelled out
 # starting with the home authors' region1
 co_authors_full_info$state1<-with(co_authors_full_info,paste0(region1,country1))
@@ -1005,6 +1015,23 @@ co_authors_full_info <- co_authors_full_info %>% select(doi:country2)
 co_authors_full_info$state2<-with(co_authors_full_info,paste0(region2,country2))
 co_authors_full_info <- left_join(co_authors_full_info,states_df,by=c("state2" = "id"))
 co_authors_full_info$region2 <- ifelse(is.na(co_authors_full_info$abb), co_authors_full_info$region2, co_authors_full_info$abb )
+co_authors_full_info <- co_authors_full_info %>% select(doi:country2)
+
+# Now handle Canadian provinces
+# Create a combined province and country identifier
+co_authors_full_info$province1 <- with(co_authors_full_info, paste0(region1, country1))
+co_authors_full_info <- left_join(co_authors_full_info, provinces_df, by = c("province1" = "id"))
+
+# Overwrite full province names with abbreviations where they occur
+co_authors_full_info$region1 <- ifelse(is.na(co_authors_full_info$abb), co_authors_full_info$region1, co_authors_full_info$abb)
+
+# Drop the joined columns
+co_authors_full_info <- co_authors_full_info %>% select(doi:country2)
+
+# Repeat the same process for the second region
+co_authors_full_info$province2 <- with(co_authors_full_info, paste0(region2, country2))
+co_authors_full_info <- left_join(co_authors_full_info, provinces_df, by = c("province2" = "id"))
+co_authors_full_info$region2 <- ifelse(is.na(co_authors_full_info$abb), co_authors_full_info$region2, co_authors_full_info$abb)
 co_authors_full_info <- co_authors_full_info %>% select(doi:country2)
 
 # write it to a csv to be visualized
