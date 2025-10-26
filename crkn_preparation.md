@@ -1,0 +1,10 @@
+# crkn_preparation
+
+
+## Orcid Profile:
+
+0009-0003-4216-8231
+
+## Bug Tracker:
+
+<https://github.com/crkn-rcdr/ORCID-Data-Visualization/issues/12>
