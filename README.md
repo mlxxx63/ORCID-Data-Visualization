@@ -1,6 +1,6 @@
 # Exploring Publication Collaborations using ORCID and DOI data
 ## Project Summary
-The resources available in this Github repository can be used to create a visualization of publication collaboration activity, based on public data from researchers' ORCID records and Crossref and DataCite DOI publication metadata. The R script in this repository can be used to retrieve information about publishing collaborations between researchers at a home organization and other organizations across the globe. The resulting CSV file can then be loaded into a [Shiny](https://shiny.posit.co/) dashboard app to create a collaboration map and additional views to explore the data further. This project was made possible by a 2022 partnership between the [ORCID US Community](https://orcidus.lyrasis.org/) (administered by Lyrasis) and the Drexel University [LEADING program](https://mrc.cci.drexel.edu/leading/), and it was extended in 2024 through a collaboration with [ORCID-CA Community](https://www.crkn-rcdr.ca/en/orcid-ca-home) (administered by CRKN). These updates included expanding data sources to retrieve DOIs from both CrossRef and Datacite, as well as transitioning from Tableau to a Shiny app for visualization.
+The resources available in this Github repository can be used to create a visualization of publication collaboration activity, based on public data from researchers' ORCID records and Crossref and DataCite DOI publication metadata. The R script `Rorcid_Crossref_Authors.R` in this repository can be used to retrieve information about publishing collaborations between researchers at a home organization and other organizations across the globe. The resulting CSV file can then be loaded into a [Shiny](https://shiny.posit.co/) dashboard app to create a collaboration map and additional views to explore the data further. This project was made possible by a 2022 partnership between the [ORCID US Community](https://orcidus.lyrasis.org/) (administered by Lyrasis) and the Drexel University [LEADING program](https://mrc.cci.drexel.edu/leading/), and it was extended in 2024 through a collaboration with [ORCID-CA Community](https://www.crkn-rcdr.ca/en/orcid-ca-home) (administered by CRKN). These updates included expanding data sources to retrieve DOIs from both CrossRef and Datacite, as well as transitioning from Tableau to a Shiny app for visualization.
 
 ## Retrieving the data
 We recommend using [R Studio](https://posit.co/) to run the [R script](https://github.com/crkn-rcdr/ORCID-Data-Visualization/blob/main/Rorcid_Crossref_Authors.R), which will result in the data needed to create the visualization. The script is designed to:
@@ -14,7 +14,7 @@ We recommend using [R Studio](https://posit.co/) to run the [R script](https://g
 * Get location information for the co-authors’ institutions 
 * Repackage data into CSV file containing home author ORCID iDs, co-author ORCID iDs and institutional affiliations/geographic location, and publication DOIs
 
-You can use the green “code” button above to download a ZIP file, which will contain the R script as well as a folder labeled “data,” which is where the resulting CSV file will be saved. Or, you can download just the R script and create your own “data” folder separately.
+You can use the green “code” button above to download a ZIP file, which will contain `Rorcid_Crossref_Authors.R` as well as a folder labeled “data,” which is where the resulting CSV file will be saved. Or, you can download just the R script and create your own “data” folder separately.
 
 Before you get started, you will need to gather the following information for your organization, based on how broad or narrow you want your search to be:
 
@@ -30,7 +30,7 @@ In addition, you will need to set up a GeoNames account to retrieve geocoordinat
 
 For help retrieving any of this information, contact ORCID-CA@crkn.ca.
 
-Open the R script file in RStudio. The script contains a number of comments and instructions. Comments are indicated by the presence of a hashtag (#) proceeding the comment text. Any lines of text with a hashtag in front will not be run as commands. Lines of text with no hashtag will be run as a command when entered in R Studio.
+Open `Rorcid_Crossref_Authors.R` file in RStudio. The script contains a number of comments and instructions. Comments are indicated by the presence of a hashtag (#) proceeding the comment text. Any lines of text with a hashtag in front will not be run as commands. Lines of text with no hashtag will be run as a command when entered in R Studio.
 
 The first time you run the script, there are a few things you will need to do to get set up. Once these things are done, you should not have to do them again:
 
@@ -76,7 +76,7 @@ Continue to follow the instructions and run the script commands, until you get t
 Once you have the CSV output, you may want to check and clean organization names and city names using [Open Refine](https://openrefine.org/). This can be helpful for collapsing multiple variations of the same organization name (mis-spellings, extra spaces, etc.), and for filling in any city information that may be missing or incorrect.
 
 ## Considerations and context for the data
-**Data errors:** The data pulled using the R script are imperfect and contain gaps, as well as user and machine errors. The numbers in the data pull are not definitive. The data pulled for your institution are a snapshot for a specific period of time and may change as researchers obtain/update their ORCID profiles and continue to publish.
+**Data errors:** The data pulled using `Rorcid_Crossref_Authors.R` are imperfect and contain gaps, as well as user and machine errors. The numbers in the data pull are not definitive. The data pulled for your institution are a snapshot for a specific period of time and may change as researchers obtain/update their ORCID profiles and continue to publish.
 
 Some examples of data errors that may exist in the data are: 
 * Missing ORCID iDs
