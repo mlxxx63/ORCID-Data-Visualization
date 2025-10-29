@@ -6,30 +6,30 @@
 # Install and load packages -----------------------------------------------
 
 # you will need to install these packages first, using the following
-# if you've already installed them, skip this step
-#install.packages('dplyr')
-#install.packages('tibble')
-#install.packages('tidyr')
-#install.packages('purrr')
-#install.packages('readr')
-#install.packages('stringr')
-#install.packages('jsonlite')
-#install.packages('lubridate')
-#install.packages('ggplot2')
-#install.packages('httr')
-#install.packages('forcats')
-#install.packages('rorcid')
-#install.packages('usethis')
-#install.packages('anytime')
-#install.packages('janitor')
-#install.packages('glue')
-#install.packages('remotes')
-#remotes::install_github("ropensci/rcrossref")
-#install.packages('roadoi')
-#install.packages('inops')
-#install.packages("rdatacite")
-#install.packages("data.table")
-#devtools::install_github("ropensci/geonames")
+#if you've already installed them, skip this step
+install.packages('dplyr')
+install.packages('tibble')
+install.packages('tidyr')
+install.packages('purrr')
+install.packages('readr')
+install.packages('stringr')
+install.packages('jsonlite')
+install.packages('lubridate')
+install.packages('ggplot2')
+install.packages('httr')
+install.packages('forcats')
+install.packages('rorcid')
+install.packages('usethis')
+install.packages('anytime')
+install.packages('janitor')
+install.packages('glue')
+install.packages('remotes')
+remotes::install_github("ropensci/rcrossref")
+install.packages('roadoi')
+install.packages('inops')
+install.packages("rdatacite")
+install.packages("data.table")
+devtools::install_github("ropensci/geonames")
 
 # load the packages
 library(dplyr)
@@ -74,10 +74,10 @@ rm(list = ls())
 # 8. Make sure to leave the quotation marks (e.g. orcid_client_id <- "APP-FDFJKDSLF320SDFF" and orcid_client_secret <- "c8e987sa-0b9c-82ed-91as-1112b24234e"). 
 
 # copy/paste your client ID from https://orcid.org/developer-tools
-orcid_client_id <- "PASTE MY CLIENT ID HERE"
+orcid_client_id <- "APP-9NZLE2EO39YD8E9M"
 
 # copy/paste your client secret from https://orcid.org/developer-tools
-orcid_client_secret <- "PASTE MY CLIENT SECRET HERE"
+orcid_client_secret <- "894495c2-98f9-4edb-9845-c844268934b6"
 
 # This gets a /read-public scope access token
 orcid_request <- POST(url  = "https://orcid.org/oauth/token",
@@ -123,31 +123,31 @@ rorcid::orcid_auth()
 
 # set the working directory where this script is
 # a folder called "data" is also expected to be in this directory
-setwd("PASTE YOUR WORKING DIRECTORY HERE")
+setwd("D:/Mount_Allison_University/DATA_3101_2025_2026/Repo_git_porject/ORCID-Data-Visualization")
 
 # set the time period of interest: this script will compile collaboration data since Jan 1 of this year.
 # replace the YYYY with a 4 digit year.
 # the more years of data desired, the longer some portions of this script will take to run
-my_year = YYYY;
+my_year = 2020;
 
 # set the home institution identifiers
-ringgold_id <- "enter your institution's ringgold" 
-grid_id <- "enter your institution's grid ID" 
-ror_id <- "enter your institution's ROR ID"
+ringgold_id <- "4509" 
+grid_id <- "grid.253135.3" 
+ror_id <- "https://ror.org/051prj435"
 # leave the @ off the email domain, if you want to catch subdomains (e.g. @tuj.temple.edu)
-email_domain <- "enter your institution's email domain" 
-organization_name <- "enter your organization's name"
+email_domain <- "ubishops.ca" 
+organization_name <- "Bishop's University"
 
 # Set a short name key word here that you will use to filter for ORCID records from the home institution later
 # Keep it short, like the state name (e.g. Oklahoma). (For Temple University, used "Temple")
 # If you are adding more than one keyword, separate them by a pipe (|)
-my_org_keyword = "enter your institution's keyword"
+my_org_keyword = "Bishop's|University"
 
 # set the institution's main location information (for use when precise location info is blank)
-anchor_org<-"enter your institution's name"
-anchor_city<-"enter your institution's city"
-anchor_region<-"enter your institution's state"
-anchor_country<-"enter your institution's country"
+anchor_org<-"Bishop's University"
+anchor_city<-"Sherbrooke"
+anchor_region<-"Québec"
+anchor_country<-"Canada"
 
 # set up GeoNames in R Environment ------------------------------------------------------------
 
