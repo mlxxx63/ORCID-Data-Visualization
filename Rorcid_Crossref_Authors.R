@@ -153,7 +153,7 @@ anchor_country<-"Canada"
 
 # define GeoNames username and use the institution's location information for geocoding.
 # these variables will be used to derive latitude and longitude.
-options(geonamesUsername = "PASTE GEONAMES USERNAME HERE")
+options(geonamesUsername = "mike_ta")
 home_city <- anchor_city
 home_country <- anchor_country
 
@@ -174,20 +174,20 @@ my_query <- glue('ringgold-org-id:', ringgold_id,
 # keep in mind that ROR ID and organization name are strings and need double quotes inside the 
 # single quotes used here for concatenation
 # replace these  example lines from Temple University carefully with ones you are interested in 
-my_query <- glue('ringgold-org-id:', '6558', 
-                 ' OR ringgold-org-id:', '43297',
-                 ' OR ringgold-org-id:', '83908',
-                 ' OR grid-org-id:', 'grid.264727.2', 
-                 ' OR grid-org-id:', 'grid.469246.b', 
-                 ' OR grid-org-id:', 'grid.460938.0', 
-                 ' OR ror-org-id:"', 'https://ror.org/00kx1jb78', 
-                 '" OR ror-org-id:"', 'https://ror.org/04zzmzt85',
-                 '" OR ror-org-id:"', 'https://ror.org/03savr706', 
-                 '" OR email:*', '@temple.edu', 
-                 ' OR email:*', '@tuj.temple.edu', 
-                 ' OR affiliation-org-name:"', 'Temple University',
-                 '" OR affiliation-org-name:"', 'Temple Ambler',
-                 '" OR affiliation-org-name:"', 'Temple Japan', '"')
+# my_query <- glue('ringgold-org-id:', '6558', 
+#                  ' OR ringgold-org-id:', '43297',
+#                  ' OR ringgold-org-id:', '83908',
+#                  ' OR grid-org-id:', 'grid.264727.2', 
+#                  ' OR grid-org-id:', 'grid.469246.b', 
+#                  ' OR grid-org-id:', 'grid.460938.0', 
+#                  ' OR ror-org-id:"', 'https://ror.org/00kx1jb78', 
+#                  '" OR ror-org-id:"', 'https://ror.org/04zzmzt85',
+#                  '" OR ror-org-id:"', 'https://ror.org/03savr706', 
+#                  '" OR email:*', '@temple.edu', 
+#                  ' OR email:*', '@tuj.temple.edu', 
+#                  ' OR affiliation-org-name:"', 'Temple University',
+#                  '" OR affiliation-org-name:"', 'Temple Ambler',
+#                  '" OR affiliation-org-name:"', 'Temple Japan', '"')
 
 # get the counts
 ##### TIME: this may hang a bit if institution has many ORCID ID holders(e.g. for Temple University's data [~3500 IDs], this took a few seconds)
@@ -214,10 +214,10 @@ my_orcids_data <- my_orcids %>%
   janitor::clean_names()
 
 ##### WRITE/READ CSV uncomment to save this data and read it back in later
-#write_csv(my_orcids_data, "./data/my_orcids_data.csv")
+write_csv(my_orcids_data, "./data/my_orcids_data.csv")
 
 # read it back in, if necessary
-#my_orcids_data <- read_csv("./data/my_orcids_data.csv", col_types = cols(.default = "c"))
+my_orcids_data <- read_csv("./data/my_orcids_data.csv", col_types = cols(.default = "c"))
 ##### WRITE/READ CSV
 
 
@@ -228,11 +228,11 @@ my_orcids_data <- my_orcids %>%
 my_employment <- rorcid::orcid_employments(my_orcids_data$orcid_identifier_path)
 
 ##### WRITE/READ JSON uncomment to work with this data outside of R or read it back in later
-#to_write<-toJSON(my_employment, na="null")
-#write(to_write,"./data/employment.json")
+to_write<-toJSON(my_employment, na="null")
+write(to_write,"./data/employment.json")
 
 # read it back in, if necessary
-#my_employment <- read_json("./data/processed/employment.json", simplifyVector = TRUE)
+my_employment <- read_json("./data/employment.json", simplifyVector = TRUE)
 ##### WRITE/READ JSON
 
 # extract the employment data and mutate the dates
@@ -363,10 +363,10 @@ orcid_person_employment_join <- my_orcid_person_data %>%
   left_join(current_employment_all, by = c("orcid_identifier_path" = "orcid_identifier"))
 
 ##### WRITE/READ CSV uncomment to save this data and read it back in later
-#write_csv(orcid_person_employment_join, "./data/orcid_employment_file.csv")
+write_csv(orcid_person_employment_join, "./data/orcid_employment_file.csv")
 
 # read it back in, if necessary
-#orcid_person_employment_join <- read_csv("./data/orcid_employment_file.csv", col_types = cols(.default = "c"))
+orcid_person_employment_join <- read_csv("./data/orcid_employment_file.csv", col_types = cols(.default = "c"))
 ##### WRITE/READ CSV
 
 
@@ -384,11 +384,11 @@ my_orcids <- orcid_person_employment_join %>%
 my_works <- rorcid::orcid_works(my_orcids)
 
 ##### WRITE/READ JSON uncomment to work with this data outside of R or read it back in later
-#to_write<-toJSON(my_works, na="null")
-#write(to_write,"./data/my_works.json")
+to_write<-toJSON(my_works, na="null")
+write(to_write,"./data/my_works.json")
 
 # read it back in, if necessary
-#my_works <- read_json("./data/my_works.json", simplifyVector = TRUE)
+my_works <- read_json("./data/my_works.json", simplifyVector = TRUE)
 ##### WRITE/READ JSON
 
 # turn the JSON file into a unique data frame by looping through the file,
@@ -448,10 +448,10 @@ dois_unduped <- dois %>%
   left_join(orcid_empl_merge, by = "orcid_identifier")
 
 ##### WRITE/READ CSV uncomment to save this data and read it back in later
-#write_csv(dois_unduped, "./data/orcid_dois.csv")
+write_csv(dois_unduped, "./data/orcid_dois.csv")
 
 # read it back in, if necessary
-#dois_unduped <- read_csv("./data/orcid_dois.csv")
+dois_unduped <- read_csv("./data/orcid_dois.csv")
 ##### WRITE/READ CSV
 
 
@@ -477,24 +477,36 @@ dois_since_year <- dois_unduped %>%
 # Also rather than DOIs SINCE a given year, it might be desired to retrieve data on DOIs from a discrete year, 
 # or from a time period with specific start and end dates.
 ##### Code improvement
-
+#A "safe" Crossref function that won't crash and won't spam the API
+# safe_cr_works <- purrr::possibly(function(z) {
+#    Sys.sleep(0.15)               # small delay = more polite to Crossref servers
+#    rcrossref::cr_works(dois = z) # fetch metadata for one DOI
+#  }, otherwise = NULL)
+# #  
+# => Normally, if rcrossref::cr_works() fails (for example, if a DOI doesn’t exist or Crossref times out), the script stops or throws a warning. So it adds a short pause (Sys.sleep(0.15)) so you don’t hit Crossref’s rate limits, and wraps the call in purrr::possibly(), which returns NULL instead of crashing if there’s an error. That means your loop will keep running smoothly even when some DOIs fail.
 
 ##### WRITE/READ JSON uncomment to work with this data outside of R or read it back in later
-#write_file_path = paste0("./data/metadata_",my_year,".json")
-#to_write<-toJSON(metadata_since_year, pretty=TRUE, na="null")
-#write(to_write,write_file_path)
+write_file_path = paste0("./data/metadata_",my_year,".json")
+to_write<-toJSON(metadata_since_year, pretty=TRUE, na="null")
+write(to_write,write_file_path)
 
 # read it back in, if necessary
-#metadata_since_year <- read_json(write_file_path, simplifyVector = TRUE)
+metadata_since_year <- read_json(write_file_path, simplifyVector = TRUE)
 ##### WRITE/READ JSON
 
 # This will loop through each result, extract ("pluck") the object called "data"
 # bind it together into a dataframe (the "dfr" part of map_dfr)
 # clean the names up and filter to remove any duplicates
-metadata_since_year_df <- metadata_since_year %>%
-  map_dfr(., pluck("data")) %>%
+# metadata_since_year_df <- metadata_since_year %>%
+#   map_dfr(., pluck("data")) %>%
+#   clean_names() %>%
+#   filter(!duplicated(doi))
+
+metadata_since_year_df <- metadata_since_year$data %>%
+  map_dfr(~ .x) %>%
   clean_names() %>%
   filter(!duplicated(doi))
+
 
 # We next want to prepare our orcid data frame to merge to the crossref data by selecting only the relevant columns.
 # Rows with no CrossRef data (like issued from DataCite) are still present here 
@@ -908,11 +920,11 @@ my_co_auths_employment <- rorcid::orcid_employments(co_auth_ids_unduped)
 
 ##### JSON
 # you can write the file to json if you want to work with it outside of R
-#to_write<-toJSON(my_co_auths_employment, na="null")
-#write(to_write,"./data/co_auths_employment.json")
+to_write<-toJSON(my_co_auths_employment, na="null")
+write(to_write,"./data/co_auths_employment.json")
 
 # read it back in, if necessary
-#my_co_auths_employment <- read_json("./data/co_auths_employment.json", simplifyVector = TRUE)
+my_co_auths_employment <- read_json("./data/co_auths_employment.json", simplifyVector = TRUE)
 ##### JSON
  
 # extract the employment data and mutate the dates
@@ -1039,10 +1051,10 @@ co_authors_full_info <- co_authors_full_info %>% select(doi:country2)
 
 # write it to a csv to be visualized
 ##### WRITE/READ CSV uncomment to save this data and read it back in later
-#write_csv(co_authors_full_info, "./data/orcid-data.csv")
+write_csv(co_authors_full_info, "./data/orcid-data.csv")
 
 # read it back in, if necessary
-#co_authors_full_info <- read_csv("./data/orcid-data.csv", col_types = cols(.default = "c"))
+co_authors_full_info <- read_csv("./data/orcid-data.csv", col_types = cols(.default = "c"))
 ##### WRITE/READ CSV
 
 # get latitude and longitude data for each location:

@@ -8,23 +8,30 @@
 # the following packages are required for this script, but they are already installed and loaded in Rorcid_Crossref_Authors.R
 # you do not need to uncomment these lines unless you are running this script independently or for the first time.
 
-# install.packages(purr)
-# install.packages("data.table")
-# devtools::install_github("ropensci/geonames")
+#install.packages(purr)
+install.packages("data.table")
+devtools::install_github("ropensci/geonames")
+install.packages("purrr")     # not purr
+install.packages("geonames")  
 
-# library(data.table)
-# library(geonames)
-# library(purrr)
+
+library(data.table)
+library(geonames)
+library(purrr)
+library(jsonlite)
+library(tibble) 
+library(dplyr)
+library(readr)
 
 # Set the institution's location information --------------------------------
 
 # the following setup for institution location and GeoNames username is also included in Rorcid_Crossref_Authors.R.
 # uncomment and update these values only if running this script independently.
 
-# home_city <- "ENTER ORGANIZATION CITY HERE"
-# home_country <- "ENTER HOME COUNTRY HERE (e.g. CA)"
+home_city <- "Sherbrooke"
+home_country <- "CA"
 
-# options(geonamesUsername = "PASTE GEONAMES USERNAME HERE")
+options(geonamesUsername = "mike_ta")
 
 # Update co_authors_full_info ------------------------------------------------
 
@@ -62,10 +69,10 @@ for (my_row in 1:nrow(places)) {
 # the places dataframe needs to be broken up into smaller dataframs of <=1000 rows
 
 # you can write the file to json if you want to work with it outside of R
-# write_json(places, "./data/places.json")
+write_json(places, "./data/places.json")
 
 # here is how you would read it back in, if necessary
-# places <- read_json("./data/places.json", simplifyVector = TRUE)
+places <- read_json("./data/places.json", simplifyVector = TRUE)
 
 # call geonames one more time to get the lat long of the home city
 home_lanc_df <- GNsearch(name_equals = home_city, country = home_country)
