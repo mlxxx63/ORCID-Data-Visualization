@@ -1,16 +1,16 @@
-# Install required packages (uncomment to install)
-# install.packages("shiny")  
-# install.packages("readr") 
-# install.packages("dplyr")  
-# install.packages("ggplot2")
-# install.packages("bslib")  
-# install.packages("bsicons")  
-# install.packages("plotly")   
-# install.packages("leaflet") 
-# install.packages("htmltools") 
-# install.packages("DT")      
-# install.packages("stringr") 
-# install.packages("tidyr")    
+#Install required packages (uncomment to install)
+install.packages("shiny")
+install.packages("readr")
+install.packages("dplyr")
+install.packages("ggplot2")
+install.packages("bslib")
+install.packages("bsicons")
+install.packages("plotly")
+install.packages("leaflet")
+install.packages("htmltools")
+install.packages("DT")
+install.packages("stringr")
+install.packages("tidyr")
 
 library(shiny)
 library(readr)
@@ -26,12 +26,16 @@ library(stringr)
 library(tidyr)
 
 # Custom variables for file paths, organization, and dates
-setwd("ENTER YOUR WORKING DIRECTORY HERE")  
-file_path <- "ENTER YOUR FILE PATH HERE"    
-organization_name <- "ENTER YOUR ORGANIZATION NAME HERE"  
-start_date <- "ENTER START DATE HERE"        
-update_date <- "ENTER UPDATE DATE HERE"       
+# setwd("D:/Mount_Allison_University/DATA_3101_2025_2026/Repo_git_porject/ORCID-Data-Visualization/data")  
+# file_path <- "./orcid_data_latlng.csv"    
+# organization_name <- "Bishop's University"  
+# start_date <- "Jan 1, 2020"        
+# update_date <- "Oct 30, 2025" 
 
+file_path <- "../data/orcid_data_latlng.csv"   # relative path from shiny-visualization/
+organization_name <- "Bishop's University"
+start_date <- "Jan 1, 2020"
+update_date <- "Oct 30, 2025"
 
 # Generate subtitle panel for displaying dates
 generateSubtitlePanel <- function(org_name = organization_name, start = start_date, end = update_date) {
