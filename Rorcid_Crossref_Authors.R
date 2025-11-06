@@ -1067,5 +1067,3 @@ source("./Geonames_Get_Lat_Long.R")
 # like Open Refine (https://openrefine.org/). It will improve the visualization if wordings and spellings
 # are standardized, particularly in the organization (org1, org2) and city name (city1, city2) fields.
 
-
-
