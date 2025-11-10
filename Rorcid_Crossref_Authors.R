@@ -57,7 +57,7 @@ library(geonames)
 
 
 # remove all objects from the environment to start with a clean slate
-rm(list = ls())
+#rm(list = ls())
 
 # Set up orcid / crossref in R environment ------------------------------------------------------------
 
@@ -286,8 +286,8 @@ my_employment_data_filtered <- my_employment_data %>%
 #              organization_name == "University of New Brunswick - Saint John" )
 
 # OR 3. to accept any organization that contains anchor_org in my_organization_filtered:
-my_employment_data_filtered <- my_employment_data %>%
-  dplyr::filter(str_detect(organization_name, anchor_org))
+# my_employment_data_filtered <- my_employment_data %>%
+#   dplyr::filter(str_detect(organization_name, anchor_org))
 
 # finally, filter to include only people who have NA as the end date
 my_employment_data_filtered_current <- my_employment_data_filtered %>%
