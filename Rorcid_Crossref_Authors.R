@@ -754,7 +754,7 @@ authlist_all <- auths_merge %>%
 
 # add some columns to authlist_all to help with this deduplicating
 authlist_all$orcid_coauth <- with(authlist_all, 
-                                  ifelse(is.na(ORCID),'',str_sub(ORCID, 18, 37))
+                                  ifelse(is.na(ORCID),'',str_sub(ORCID, 19, 37))
 )
 
 # fullname identifier for the home author, striped of punctuation and whitespace
