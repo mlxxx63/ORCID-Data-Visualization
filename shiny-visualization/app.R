@@ -32,7 +32,7 @@ library(tidyr)
 # start_date <- "Jan 1, 2020"        
 # update_date <- "Oct 30, 2025" 
 
-file_path <- "../data/orcid_data_latlng.csv"   # relative path from shiny-visualization/
+file_path <- "data/orcid_data_latlng.csv"
 organization_name <- "Bishop's University"
 start_date <- "Jan 1, 2020"
 update_date <- "Oct 30, 2025"
@@ -223,7 +223,7 @@ server <- function(input, output, session) {
     
     # Get unique locations with their associated organizations
     unique_institutions <- data() %>%
-      select(org2, city2, region2, country2, lat2, lng2, title) %>%
+      select(org2, city2, region2, country2, lat2, lng2) %>%
       filter(!is.na(lat2) & !is.na(lng2)) %>%
       group_by(lat2, lng2) %>%
       summarise(
@@ -241,7 +241,7 @@ server <- function(input, output, session) {
       summarise(
         `org2 occurrence` = n(),
         dois = list(unique(doi)),
-        titles = list(unique(title)),
+        #titles = list(unique(title)),
         .groups = 'drop'
       )
     
@@ -374,9 +374,9 @@ server <- function(input, output, session) {
         data() %>%
           filter(!is.na(org2) & org2 != "" & !str_detect(org2, "^\\s*$")) %>%
           filter(grepl(search_term, orcid1, ignore.case = TRUE)) %>%
-          select(doi, title) %>%
+          select(doi) %>%
           distinct() %>%
-          filter(!is.na(doi) & !is.na(title)) %>%
+          filter(!is.na(doi)) %>%
           rename(DOI = doi, 
                  Title = title)
       })
