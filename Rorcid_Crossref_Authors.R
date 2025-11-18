@@ -832,6 +832,7 @@ authlist_nodups <- subset(my_join, select = -c(orcid_identifier_path,department_
 # create a dataframe with the columns we need
 co_authors <- authlist_nodups %>%
   select(any_of(c("doi",
+                  "title",
                   "issued",
                   "given_name",
                   "family_name", 

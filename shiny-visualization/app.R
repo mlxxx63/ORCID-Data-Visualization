@@ -366,18 +366,24 @@ server <- function(input, output, session) {
       article_data <- reactive({
         req(data())
         search_term <- input$search
-
+        
         data() %>%
           filter(!is.na(org2) & org2 != "" & !str_detect(org2, "^\\s*$")) %>%
           filter(grepl(search_term, orcid1, ignore.case = TRUE)) %>%
           select(doi, title) %>%
           distinct() %>%
           filter(!is.na(doi) & !is.na(title)) %>%
-          rename(DOI = doi, 
-                 Title = title)
+          rename(DOI = doi,
+                 Title = title) %>%
+          #this make the doi a clickable link
+          mutate(
+            DOI = paste0(
+              "<a href='https://doi.org/", DOI,
+              "' target='_blank'>", DOI, "</a>"
+            )
+          )
       })
-
-
+      
       # Render article-level table
       output$articleTable <- renderDataTable({
         datatable(
@@ -389,7 +395,8 @@ server <- function(input, output, session) {
             scrollCollapse = TRUE,
             paging = FALSE
           ),
-          rownames = FALSE
+          rownames = FALSE,
+          escape = FALSE #Allow HTML so that the link is clickable
         )
       })
     ######################### END SEARCH FOR OWN COLLABS ###########################
